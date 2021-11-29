@@ -195,19 +195,34 @@ class App():
     def treeview(self):
         for widget in self.root.winfo_children():
             widget.place_forget()
-            
-        self.tree = ttk.Treeview(root)
+        self.treeframe = Frame(root, width=700, height=400)
+        self.treeframe.pack(expand=False)
+        self.tree = ttk.Treeview(self.treeframe, selectmode="browse")
         self.clear_tree()
+        self.yscrollbar = ttk.Scrollbar(self.treeframe, orient=VERTICAL, command=self.tree.yview)
+        self.xscrollbar = ttk.Scrollbar(self.treeframe, orient=HORIZONTAL, command=self.tree.xview)
+        self.tree.configure(yscroll=self.yscrollbar.set)
+        self.tree.configure(xscroll=self.xscrollbar.set)
+        self.yscrollbar.pack(side="right", fill='y')
+        self.xscrollbar.pack(side='bottom', fill='x')
+        
+        self.counter = 0
+        for i in self.df.columns:
+            self.counter += 1
+        
+        self.column_width = self.root.winfo_width() //self.counter
+        
         self.tree["column"] = list(self.df.columns)
         self.tree["show"] = "headings"
         for column in self.tree["column"]:
             self.tree.heading(column, text=column)
+            self.tree.column(column, anchor=CENTER, width=self.column_width)
             
         self.df_rows=self.df.to_numpy().tolist()
         for row in self.df_rows:
             self.tree.insert("", "end", values=row)
         
-        self.tree.place(x=0, y=0)
+        self.tree.pack(side="left")
         
         
     def clear_tree(self):
@@ -217,7 +232,7 @@ class App():
 root = Tk()
 app = App(root)
 root.geometry("700x400")
-root.resizable()
+root.resizable(width=False , height=False)
 
 
 root.mainloop()
